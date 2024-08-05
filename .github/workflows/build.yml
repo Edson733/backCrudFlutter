@@ -24,11 +24,6 @@ jobs:
           pip install -r insert/requirements.txt
           pip install -r update/requirements.txt
           pip install -r delete/requirements.txt
-      - name: Configure AWS Region
-        run: aws configure set region us-east-2
-      - name: Generate coverage report
-        run: |
-          coverage xml -o coverage.xml
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
@@ -54,7 +49,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r get/requirements.txt
-          pip install -r create/requirements.txt
+          pip install -r insert/requirements.txt
           pip install -r update/requirements.txt
           pip install -r delete/requirements.txt
       - name: Install AWS CLI

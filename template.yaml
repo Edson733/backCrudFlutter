@@ -7,7 +7,8 @@ Description: >
 
 Globals:
   Function:
-    Timeout: 3
+    Timeout: 10
+    MemorySize: 256
 
 Resources:
   LambdaExecutionRole:
@@ -35,8 +36,8 @@ Resources:
   InfoApi:
     Type: AWS::Serverless::Api
     Properties:
-      StageName: Prod
       Name: InfoApi
+      StageName: Prod
       Cors:
         AllowOrigin: "'*'"
         AllowHeaders: "'*'"
