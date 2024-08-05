@@ -1,42 +1,33 @@
+import pymysql
 import json
-
-# import requests
 
 
 def lambda_handler(event, context):
-    """Sample pure Lambda function
+    connection = pymysql.connect(
+        host='crudflutter.c38wyyquynep.us-east-2.rds.amazonaws.com',
+        user='admin',
+        password='admin123',
+        database='crud_flutter'
+    )
 
-    Parameters
-    ----------
-    event: dict, required
-        API Gateway Lambda Proxy Input Format
-
-        Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
-
-    context: object, required
-        Lambda Context runtime methods and attributes
-
-        Context doc: https://docs.aws.amazon.com/lambda/latest/dg/python-context-object.html
-
-    Returns
-    ------
-    API Gateway Lambda Proxy Output Format: dict
-
-        Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
-    """
-
-    # try:
-    #     ip = requests.get("http://checkip.amazonaws.com/")
-    # except requests.RequestException as e:
-    #     # Send some context about this error to Lambda Logs
-    #     print(e)
-
-    #     raise e
-
-    return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "message": "hello world",
-            # "location": ip.text.replace("\n", "")
-        }),
-    }
+    try:
+        with connection.cursor() as cursor:
+            query = "SELECT * FROM animal"
+            cursor.execute(query)
+            result = cursor.fetchall()
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Access-Control-Allow-Origin': '*',
+                    'Access-Control-Allow-Headers': '*',
+                    'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,OPTIONS',
+                },
+                'body': json.dumps(result)
+            }
+    except Exception:
+        return {
+            'statusCode': 500,
+            'body': json.dumps({"error": "Ocurrió un error inesperado."})
+        }
+    finally:
+        connection.close()

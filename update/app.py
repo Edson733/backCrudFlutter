@@ -1,42 +1,58 @@
+import pymysql
 import json
-
-# import requests
 
 
 def lambda_handler(event, context):
-    """Sample pure Lambda function
+    body = json.loads(event['body'])
+    id = body['id']
+    nombre = body['nombre']
+    raza = body['raza']
+    edad = body['edad']
+    color = body['color']
 
-    Parameters
-    ----------
-    event: dict, required
-        API Gateway Lambda Proxy Input Format
+    connection = pymysql.connect(
+        host='crudflutter.c38wyyquynep.us-east-2.rds.amazonaws.com',
+        user='admin',
+        password='admin123',
+        database='crud_flutter'
+    )
 
-        Event doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html#api-gateway-simple-proxy-for-lambda-input-format
+    try:
+        with connection.cursor() as cursor:
+            query = "UPDATE animal SET "
+            updates = []
+            values = []
 
-    context: object, required
-        Lambda Context runtime methods and attributes
+            if nombre is not None:
+                updates.append("nombre = %s")
+                values.append(nombre)
+            if raza is not None:
+                updates.append("raza = %s")
+                values.append(raza)
+            if edad is not None:
+                updates.append("edad = %s")
+                values.append(edad)
+            if color is not None:
+                updates.append("color = %s")
+                values.append(color)
 
-        Context doc: https://docs.aws.amazon.com/lambda/latest/dg/python-context-object.html
-
-    Returns
-    ------
-    API Gateway Lambda Proxy Output Format: dict
-
-        Return doc: https://docs.aws.amazon.com/apigateway/latest/developerguide/set-up-lambda-proxy-integrations.html
-    """
-
-    # try:
-    #     ip = requests.get("http://checkip.amazonaws.com/")
-    # except requests.RequestException as e:
-    #     # Send some context about this error to Lambda Logs
-    #     print(e)
-
-    #     raise e
-
-    return {
-        "statusCode": 200,
-        "body": json.dumps({
-            "message": "hello world",
-            # "location": ip.text.replace("\n", "")
-        }),
-    }
+            query += ", ".join(updates) + " WHERE id = %s"
+            values.append(id)
+            cursor.execute(query, tuple(values))
+            connection.commit()
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Headers': '*',
+                'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,OPTIONS',
+            },
+            'body': json.dumps('Animal actualizado correctamente')
+        }
+    except Exception:
+        return {
+            'statusCode': 500,
+            'body': json.dumps({"error": "Ocurrió un error inesperado."})
+        }
+    finally:
+        connection.close()

@@ -4,7 +4,10 @@ import json
 
 def lambda_handler(event, context):
     body = json.loads(event['body'])
-    id = body['id']
+    nombre = body['nombre']
+    raza = body['raza']
+    edad = body['edad']
+    color = body['color']
 
     connection = pymysql.connect(
         host='crudflutter.c38wyyquynep.us-east-2.rds.amazonaws.com',
@@ -15,8 +18,8 @@ def lambda_handler(event, context):
 
     try:
         with connection.cursor() as cursor:
-            query = "DELETE FROM animal WHERE id = %s"
-            cursor.execute(query, (id))
+            query = """INSERT INTO animal(nombre, raza, edad, color) VALUES(%s, %s, %s, %s);"""
+            cursor.execute(query, (nombre, raza, edad, color))
             connection.commit()
         return {
             'statusCode': 200,
@@ -25,7 +28,7 @@ def lambda_handler(event, context):
                 'Access-Control-Allow-Headers': '*',
                 'Access-Control-Allow-Methods': 'GET,PUT,POST,DELETE,OPTIONS',
             },
-            'body': json.dumps('Animal eliminado correctamente')
+            'body': json.dumps("Animal creado correctamente")
         }
     except Exception:
         return {

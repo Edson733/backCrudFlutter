@@ -5,37 +5,134 @@ Description: >
 
   Sample SAM Template for backCrudFlutter
 
-# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
 Globals:
   Function:
     Timeout: 3
 
 Resources:
-  HelloWorldFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: LambdaBasicExecution
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource: arn:aws:logs:*:*:*
+
+  InfoApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      Name: InfoApi
+      Cors:
+        AllowOrigin: "'*'"
+        AllowHeaders: "'*'"
+        AllowMethods: "'OPTIONS,POST,GET,PUT,DELETE'"
+
+  GetInfoFunction:
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: get/
       Handler: app.lambda_handler
       Runtime: python3.12
-      Architectures:
-        - x86_64
+      Policies:
+        - AWSLambdaBasicExecutionRole
       Events:
-        HelloWorld:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+        GetResource:
+          Type: Api
           Properties:
-            Path: /hello
+            RestApiId: !Ref InfoApi
+            Path: /get
             Method: get
 
+  PostInfoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: insert/
+      Handler: app.lambda_handler
+      Runtime: python3.12
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      Events:
+        PostResource:
+          Type: Api
+          Properties:
+            RestApiId: !Ref InfoApi
+            Path: /post
+            Method: post
+
+  PutInfoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: update/
+      Handler: app.lambda_handler
+      Runtime: python3.12
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      Events:
+        PutResource:
+          Type: Api
+          Properties:
+            RestApiId: !Ref InfoApi
+            Path: /put
+            Method: put
+
+  DeleteInfoFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: delete/
+      Handler: app.lambda_handler
+      Runtime: python3.12
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      Events:
+        DeleteResource:
+          Type: Api
+          Properties:
+            RestApiId: !Ref InfoApi
+            Path: /delete
+            Method: delete
+
 Outputs:
-  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
-  # Find out more about other implicit resources you can reference within SAM
-  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
-  HelloWorldApi:
-    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
-    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/hello/"
-  HelloWorldFunction:
-    Description: "Hello World Lambda Function ARN"
-    Value: !GetAtt HelloWorldFunction.Arn
-  HelloWorldFunctionIamRole:
-    Description: "Implicit IAM Role created for Hello World function"
-    Value: !GetAtt HelloWorldFunctionRole.Arn
+  GetInfoApi:
+    Description: "API Gateway endpoint URL for Prod stage for GetInfo function"
+    Value: !Sub "https://${InfoApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/get/"
+  PostInfoApi:
+    Description: "API Gateway endpoint URL for Prod stage for PostInfo function"
+    Value: !Sub "https://${InfoApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/post/"
+  PutInfoApi:
+    Description: "API Gateway endpoint URL for Prod stage for PutInfo function"
+    Value: !Sub "https://${InfoApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/put/"
+  DeleteInfoApi:
+    Description: "API Gateway endpoint URL for Prod stage for DeleteInfo function"
+    Value: !Sub "https://${InfoApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/delete/"
+
+  GetInfoFunction:
+    Description: "GetInfo Lambda Function ARN"
+    Value: !GetAtt GetInfoFunction.Arn
+  PostInfoFunction:
+    Description: "PostInfo Lambda Function ARN"
+    Value: !GetAtt PostInfoFunction.Arn
+  PutInfoFunction:
+    Description: "PutInfo Lambda Function ARN"
+    Value: !GetAtt PutInfoFunction.Arn
+  DeleteInfoFunction:
+    Description: "DeleteInfo Lambda Function ARN"
+    Value: !GetAtt DeleteInfoFunction.Arn
+
+  LambdaExecutionRoleArn:
+    Description: "Lambda Execution Role ARN"
+    Value: !GetAtt LambdaExecutionRole.Arn
