@@ -4,9 +4,9 @@ import json
 
 def lambda_handler(event, context):
     connection = pymysql.connect(
-        host='crudflutter.c38wyyquynep.us-east-2.rds.amazonaws.com',
-        user='admin',
-        password='admin123',
+        host='localhost',
+        user='root',
+        password='root',
         database='crud_flutter'
     )
 
